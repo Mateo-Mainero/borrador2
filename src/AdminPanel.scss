@@ -1,0 +1,144 @@
+// AdminPanel.scss
+
+.admin-panel {
+  background-color: #f9f9fb;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+
+  h2, h3 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .btn {
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-danger {
+    background-color: #ff4d4f;
+    border: none;
+
+    &:hover {
+      background-color: #e84142;
+    }
+  }
+
+  .btn-primary {
+    background-color: #007bff;
+    border: none;
+
+    &:hover {
+      background-color: #006ae0;
+    }
+  }
+
+  .btn-warning {
+    background-color: #ffc107;
+    color: #000;
+    border: none;
+
+    &:hover {
+      background-color: #e0a800;
+    }
+  }
+
+  .btn-success {
+    background-color: #28a745;
+
+    &:hover {
+      background-color: #218838;
+    }
+  }
+
+  .table {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+    margin-top: 1rem;
+
+    th, td {
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    td {
+      font-size: 0.95rem;
+    }
+
+    .text-success {
+      font-weight: 600;
+    }
+
+    .status-dot {
+      height: 12px;
+      width: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+
+    .online {
+      background-color: #28a745;
+    }
+
+    .offline {
+      background-color: #dc3545;
+    }
+  }
+
+  .modal-content {
+    border-radius: 16px;
+    padding: 1rem;
+
+    .modal-header {
+      background-color: #007bff;
+      color: white;
+      border-bottom: none;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+
+      .btn-close {
+        filter: invert(1);
+      }
+    }
+
+    .modal-body {
+      padding-top: 0.5rem;
+
+      label {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        display: block;
+      }
+
+      input, select {
+        border-radius: 8px;
+      }
+    }
+
+    .modal-footer {
+      border-top: none;
+      justify-content: space-between;
+    }
+  }
+
+  // Mobile friendly
+  @media (max-width: 768px) {
+    .table {
+      font-size: 0.85rem;
+    }
+
+    .modal-dialog {
+      margin: 1rem;
+    }
+  }
+}

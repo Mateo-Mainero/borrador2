@@ -1,0 +1,79 @@
+/* Contenedor principal */
+.loginContainer {
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  height: 100vh; /* Altura completa de la pantalla */
+  width: 210vh;
+  background: url("../src/assets/logo1.png") center no-repeat;
+  background-size: 65vh;
+  margin: 0;
+}
+
+
+
+/* Caja del formulario */
+.loginBox {
+  background-color: rgba(255, 255, 255, 0.8); /* Transparencia */
+  padding: 50px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  
+  
+}
+
+/* Estilos del formulario */
+.loginBox h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 14px;
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: red;
+}
+
+/* Enlace Contactanos en la esquina superior izquierda */
+.contactLink {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 3px;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
