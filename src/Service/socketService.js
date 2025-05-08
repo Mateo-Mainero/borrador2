@@ -1,64 +1,112 @@
 import io from 'socket.io-client';
 
-const backUrl = 'http://localhost:3000'; // Replace with your backend URL
-let socket = null;
-
-export const connectSocket = () => {
-  const token = localStorage.getItem('authToken');
-  if (!token) {
-    console.error('No auth token found');
-    return null;
+class SocketService {
+  constructor() {
+    this.socket = null;
+    this.listeners = new Map();
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 5;
   }
 
-  if (!socket) {
-    socket = io(backUrl, {
-      reconnectionAttempts: 5,
-      reconnectionDelay: 2000,
-      transports: ['websocket', 'polling'], // Allow fallback to polling
-      query: { authorization: token },
+  connect() {
+    if (this.socket?.connected) {
+      console.log('Socket ya conectado, reutilizando conexión');
+      return this.socket;
+    }
+
+    try {
+      console.log('Intentando conectar al servidor WebSocket...');
+      this.socket = io('http://localhost:3000', {
+        reconnection: true,
+        reconnectionAttempts: this.maxReconnectAttempts,
+        reconnectionDelay: 2000,
+        timeout: 10000,
+        transports: ['websocket']
+      });
+
+      this.setupEventListeners();
+      return this.socket;
+    } catch (error) {
+      console.error('Error al conectar con Socket.IO:', error);
+      return null;
+    }
+  }
+
+  setupEventListeners() {
+    this.socket.on('connect', () => {
+      console.log('Conectado al servidor de turnos');
+      console.log('ID del socket:', this.socket.id);
+      this.reconnectAttempts = 0;
     });
 
-    socket.on('connect', () => {
-      console.log('Connected to WebSocket server');
-      console.log('Token:', token);
+    this.socket.on('connect_error', (error) => {
+      console.error('Error de conexión:', error);
+      this.reconnectAttempts++;
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        console.error('Máximo número de intentos de reconexión alcanzado');
+        this.disconnect();
+      }
     });
 
-    socket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
+    this.socket.on('disconnect', (reason) => {
+      console.log('Desconectado:', reason);
+      if (reason === 'io server disconnect') {
+        console.log('El servidor forzó la desconexión, intentando reconectar...');
+        this.socket.connect();
+      }
     });
 
-    socket.on('disconnect', (reason) => {
-      console.warn('Disconnected:', reason);
+    this.socket.on('error', (error) => {
+      console.error('Error en Socket.IO:', error);
     });
   }
-  return socket;
-};
 
-export const emit = (event, data) => {
-  if (socket) {
-    socket.emit(event, data);
-  } else {
-    console.error('Socket not connected');
+  disconnect() {
+    if (this.socket) {
+      console.log('Desconectando socket...');
+      this.socket.disconnect();
+      this.socket = null;
+      this.reconnectAttempts = 0;
+    }
   }
-};
 
-export const on = (event, callback) => {
-  if (socket) {
-    socket.on(event, callback);
-  } else {
-    console.error('Socket not connected');
+  emit(event, data) {
+    if (this.socket?.connected) {
+      console.log(`Emitiendo evento ${event}:`, data);
+      this.socket.emit(event, data);
+    } else {
+      console.error('Socket no está conectado');
+      this.connect();
+    }
   }
-};
 
-export const off = (event, callback) => {
-  if (socket) {
-    socket.off(event, callback);
+  on(event, callback) {
+    if (this.socket?.connected) {
+      console.log(`Registrando listener para evento ${event}`);
+      this.socket.on(event, callback);
+      this.listeners.set(event, callback);
+    } else {
+      console.error('Socket no está conectado');
+    }
   }
-};
 
-export const disconnectSocket = () => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
+  off(event) {
+    if (this.socket?.connected && this.listeners.has(event)) {
+      console.log(`Removiendo listener para evento ${event}`);
+      this.socket.off(event, this.listeners.get(event));
+      this.listeners.delete(event);
+    }
   }
-};
+
+  removeAllListeners() {
+    if (this.socket?.connected) {
+      console.log('Removiendo todos los listeners');
+      this.listeners.forEach((callback, event) => {
+        this.socket.off(event, callback);
+      });
+      this.listeners.clear();
+    }
+  }
+}
+
+export const socketService = new SocketService();

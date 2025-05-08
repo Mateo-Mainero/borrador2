@@ -1,27 +1,47 @@
-import React from "react";
-import { Navigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { authService } from './Service/api';
 
-const ProtectedRoute = ({ children, roleRequired }) => {
-  const token = localStorage.getItem("authToken");
+const ProtectedRoute = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const location = useLocation();
 
-  if (!token) {
-    // Redirige al login si no hay token
-    return <Navigate to="/login" replace />;
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          setIsAuthenticated(false);
+          return;
+        }
+
+        const response = await authService.getCurrentUser();
+        if (response.data) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          localStorage.removeItem('authToken');
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+        localStorage.removeItem('authToken');
+      }
+    };
+
+    verifyAuth();
+  }, []);
+
+  if (isAuthenticated === null) {
+    // Mostrar un indicador de carga mientras se verifica la autenticación
+    return <div>Cargando...</div>;
   }
 
-  try {
-    const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decodificar el payload del token
-
-    // Verifica si el usuario tiene el rol requerido
-    if (roleRequired && decodedToken.idrol !== roleRequired) {
-      return <Navigate to="/unauthorized" replace />; // Redirige si no tiene el rol adecuado
-    }
-
-    return children; // Permite el acceso si el token es válido y el rol coincide
-  } catch (error) {
-    console.error("Error decodificando el token:", error);
-    return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    // Redirigir al login y guardar la ubicación actual para redirigir después del login
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
+
+  return children;
 };
 
 export default ProtectedRoute;
