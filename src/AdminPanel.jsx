@@ -60,10 +60,10 @@ function AdminPanel() {
     try {
       const token = localStorage.getItem("authToken");
       const [usersRes, profileRes] = await Promise.all([
-        axios.get("http://localhost:3000/usuarios/GetAll", {
+        axios.get("http://localhost:3000/api/usuarios", {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get("http://localhost:3000/auth/prueba", {
+        axios.get("http://localhost:3000/api/auth/profile", {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -72,12 +72,13 @@ function AdminPanel() {
       setAdminProfile(profileRes.data);
     } catch (error) {
       console.error("❌ Error al cargar datos:", error.response?.data || error.message);
+      Swal.fire("Error", "No se pudieron cargar los datos", "error");
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
-    navigate("/");
+    navigate("/login");
   };
 
   const openCreateModal = () => {
@@ -104,8 +105,9 @@ function AdminPanel() {
 
     if (confirm.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:3000/usuarios/Delete/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` }
+        const token = localStorage.getItem("authToken");
+        await axios.delete(`http://localhost:3000/api/usuarios/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
         fetchData();
         Swal.fire("Eliminado", "El usuario ha sido eliminado.", "success");
@@ -121,11 +123,11 @@ function AdminPanel() {
     const token = localStorage.getItem("authToken");
     try {
       if (isEditing) {
-        await axios.patch(`http://localhost:3000/usuarios/update/${modalData.id}`, modalData, {
+        await axios.patch(`http://localhost:3000/api/usuarios/${modalData.id}`, modalData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post("http://localhost:3000/usuarios/Create", modalData, {
+        await axios.post("http://localhost:3000/api/usuarios", modalData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -171,18 +173,18 @@ function AdminPanel() {
           </thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u.id}>
-                <td>{u.id}</td>
+              <tr key={u._id}>
+                <td>{u._id}</td>
                 <td>{u.usuario}</td>
                 <td>{ROLES[u.id_rol]}</td>
                 <td>
-                  <span className={`badge ${userStatuses[u.id] ? "bg-success" : "bg-secondary"}`}>
-                    {userStatuses[u.id] ? "Conectado" : "Desconectado"}
+                  <span className={`badge ${userStatuses[u._id] ? "bg-success" : "bg-secondary"}`}>
+                    {userStatuses[u._id] ? "Conectado" : "Desconectado"}
                   </span>
                 </td>
                 <td>
                   <button className="btn btn-warning btn-sm me-2" onClick={() => openEditModal(u)}>Editar</button>
-                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(u.id)}>Eliminar</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(u._id)}>Eliminar</button>
                 </td>
               </tr>
             ))}
@@ -205,7 +207,7 @@ function AdminPanel() {
               </div>
               <div className="mb-3">
                 <label>Contraseña</label>
-                <input type="password" className="form-control" value={modalData.password} onChange={e => setModalData({ ...modalData, password: e.target.value })} required />
+                <input type="password" className="form-control" value={modalData.password} onChange={e => setModalData({ ...modalData, password: e.target.value })} required={!isEditing} />
               </div>
               <div className="mb-3">
                 <label>Rol</label>
